@@ -6,6 +6,7 @@ from pathlib import Path
 
 import streamlit as st
 
+from lenses import ANALYSIS_LENSES, LENS_ORDER, format_report_preamble
 from pdf_extract import extract_folder, overlap_sketch_markdown
 
 
@@ -42,7 +43,10 @@ st.set_page_config(
 )
 
 st.title("PDF Research Agent")
-st.caption("Folder of PDFs → extract text → offline overlap sketch. Full narrative report = next step (LLM).")
+st.caption(
+    "Folder of PDFs → choose an **analysis lens** → extract text → offline structural sketch. "
+    "Deeper hermeneutic / epistemic passes = next (LLM). See `docs/analysis_lenses.md`."
+)
 
 with st.sidebar:
     st.subheader("Persona")
@@ -66,6 +70,14 @@ folder_input = st.text_input(
 )
 st.session_state["folder_path"] = folder_input.strip()
 
+lens_id = st.selectbox(
+    "Analysis lens",
+    options=list(LENS_ORDER),
+    format_func=lambda k: ANALYSIS_LENSES[k]["label"],
+    index=0,
+    help="Interpretive stance for this run. Structural/lexical is live offline; others record intent + preamble until wired.",
+)
+
 with st.expander("Path not found? (Windows)"):
     st.markdown(
         """
@@ -86,6 +98,7 @@ with col_b:
 if clear:
     st.session_state.pop("last_markdown", None)
     st.session_state.pop("last_texts", None)
+    st.session_state.pop("last_lens", None)
     st.rerun()
 
 if run:
@@ -102,7 +115,9 @@ if run:
                 st.warning("No `.pdf` files in that folder.")
             else:
                 st.session_state["last_texts"] = texts
-                st.session_state["last_markdown"] = overlap_sketch_markdown(texts)
+                st.session_state["last_lens"] = lens_id
+                body = overlap_sketch_markdown(texts)
+                st.session_state["last_markdown"] = format_report_preamble(lens_id) + body
         except ValueError as e:
             msg = str(e)
             if "does not exist" in msg:
@@ -120,7 +135,10 @@ if run:
 
 if "last_markdown" in st.session_state:
     st.markdown("---")
-    st.subheader("Report draft (offline sketch)")
+    lens_note = ""
+    if "last_lens" in st.session_state:
+        lens_note = f" — {ANALYSIS_LENSES[st.session_state['last_lens']]['label']}"
+    st.subheader(f"Report draft (offline sketch){lens_note}")
     st.markdown(st.session_state["last_markdown"])
 
     with st.expander("Raw extracted text (per file)"):

@@ -61,6 +61,8 @@ Your browser should open to a local URL (usually `http://localhost:8501`). Paste
 |------|--------|
 | `app.py` | Streamlit UI (big red buttons, folder path, report sketch) |
 | `pdf_extract.py` | PDF text extraction + offline overlap hints |
+| `lenses.py` | Named analysis lenses (labels + preamble for future LLM routing) |
 | `requirements.txt` | Python dependencies |
 | `docs/agent_character_and_skills.md` | Character, tone, and “skills” the agent should behave as if it has |
+| `docs/analysis_lenses.md` | Hermeneutic / terminological / epistemic / discourse lenses — intent & prompts map |
 | `docs/BUILD_DISCOURSE.md` | Session notes: local-first scope, philosophy, and how to pace feature work |
