@@ -11,6 +11,61 @@ from folder_dialog import pick_folder_path
 from lenses import ANALYSIS_LENSES, LENS_ORDER, format_report_preamble
 from pdf_extract import extract_folder, overlap_sketch_markdown
 
+from openai import OpenAI
+import os
+
+# Initialize DeepSeek client
+@st.cache_resource
+def get_deepseek_client():
+    api_key = os.environ.get("DEEPSEEK_API_KEY")
+    if not api_key:
+        st.warning("⚠️ No DEEPSEEK_API_KEY found in environment variables. DeepSeek features disabled.")
+        return None
+    return OpenAI(
+        api_key=api_key,
+        base_url="https://api.deepseek.com"
+    )
+
+deepseek_client = get_deepseek_client()
+
+def deepseek_analyze(texts: dict[str, str], lens_id: str, query: str = "") -> str:
+    """Use DeepSeek to generate intelligent analysis of PDF contents."""
+    if not deepseek_client:
+        return "⚠️ DeepSeek API key not configured. Set DEEPSEEK_API_KEY environment variable."
+    
+    # Combine texts (limit to avoid token limits)
+    combined = "\n\n---\n\n".join([
+        f"FILE: {name}\n\n{body[:3000]}"  # First 3000 chars per file
+        for name, body in list(texts.items())[:5]  # First 5 PDFs
+    ])
+    
+    lens_label = ANALYSIS_LENSES.get(lens_id, {}).get("label", lens_id)
+    
+    system_prompt = """You are a research analysis assistant. Analyze the provided academic PDF extracts.
+Be specific, cite evidence from the texts, and identify patterns, contradictions, or gaps.
+Use clear academic tone but accessible language. Markdown formatting OK."""
+    
+    user_prompt = f"""Analysis lens: {lens_label}
+{query if query else f"Analyze these research papers focusing on: {lens_label}"}
+
+PDF extracts:
+{combined}
+
+Provide detailed analysis with specific references to the texts."""
+    
+    try:
+        response = deepseek_client.chat.completions.create(
+            model="deepseek-chat",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            temperature=0.7,
+            max_tokens=2000
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"❌ DeepSeek error: {str(e)}"
 
 def build_report_markdown(lens_id: str, texts: dict[str, str]) -> str:
     parts: list[str] = [format_report_preamble(lens_id)]
@@ -67,6 +122,43 @@ with st.sidebar:
             st.text(persona_path.read_text(encoding="utf-8")[:1200] + "\n…")
     else:
         st.warning("Add `docs/agent_character_and_skills.md` for tone rules.")
+
+with st.sidebar:
+    st.subheader("Persona")
+    persona_path = Path(__file__).resolve().parent / "docs" / "agent_character_and_skills.md"
+    if persona_path.is_file():
+        st.success(f"Using `{persona_path.name}` on disk.")
+        with st.expander("Preview first lines"):
+            st.text(persona_path.read_text(encoding="utf-8")[:1200] + "\n…")
+    else:
+        st.warning("Add `docs/agent_character_and_skills.md` for tone rules.")
+    
+    # ========== ADD THIS DEEPSEEK SECTION HERE ==========
+    st.divider()  # adds a nice line separator
+    st.subheader("🤖 DeepSeek AI Analysis")
+    use_deepseek = st.checkbox("Enable DeepSeek analysis (requires API key)")
+    
+    if use_deepseek and not deepseek_client:
+        st.error("⚠️ Set DEEPSEEK_API_KEY in environment variables")
+        st.code("""# Windows PowerShell:
+$env:DEEPSEEK_API_KEY="your-key-here"
+
+# Mac/Linux:
+export DEEPSEEK_API_KEY="your-key-here"
+
+# Or create .env file and use python-dotenv
+""")
+    
+    if use_deepseek and deepseek_client:
+        analysis_type = st.radio(
+            "Analysis type",
+            ["Summary & synthesis", "Key claims & evidence", "Research gaps", "Custom query"]
+        )
+        custom_query = ""
+        if analysis_type == "Custom query":
+            custom_query = st.text_area("Your question about these PDFs:")
+    # ========== END OF DEEPSEEK SECTION ==========
+
 
 default_folder = ""
 if "folder_path" not in st.session_state:
