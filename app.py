@@ -28,6 +28,44 @@ def get_deepseek_client():
 
 deepseek_client = get_deepseek_client()
 
+def deepseek_analyze(texts: dict[str, str], lens_id: str, query: str = "") -> str:
+    """Use DeepSeek to generate intelligent analysis of PDF contents."""
+    if not deepseek_client:
+        return "⚠️ DeepSeek API key not configured. Set DEEPSEEK_API_KEY environment variable."
+    
+    # Combine texts (limit to avoid token limits)
+    combined = "\n\n---\n\n".join([
+        f"FILE: {name}\n\n{body[:3000]}"  # First 3000 chars per file
+        for name, body in list(texts.items())[:5]  # First 5 PDFs
+    ])
+    
+    lens_label = ANALYSIS_LENSES.get(lens_id, {}).get("label", lens_id)
+    
+    system_prompt = """You are a research analysis assistant. Analyze the provided academic PDF extracts.
+Be specific, cite evidence from the texts, and identify patterns, contradictions, or gaps.
+Use clear academic tone but accessible language. Markdown formatting OK."""
+    
+    user_prompt = f"""Analysis lens: {lens_label}
+{query if query else f"Analyze these research papers focusing on: {lens_label}"}
+
+PDF extracts:
+{combined}
+
+Provide detailed analysis with specific references to the texts."""
+    
+    try:
+        response = deepseek_client.chat.completions.create(
+            model="deepseek-chat",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            temperature=0.7,
+            max_tokens=2000
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"❌ DeepSeek error: {str(e)}"
 
 def build_report_markdown(lens_id: str, texts: dict[str, str]) -> str:
     parts: list[str] = [format_report_preamble(lens_id)]
