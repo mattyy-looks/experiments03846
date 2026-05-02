@@ -64,15 +64,35 @@ The agent should **surface candidate readings and tensions**, attribute claims t
 
 ---
 
-## Idea backlog: reader masks (“as if” a philosopher)
+## Split of duties: persona vs lenses vs masks
 
-**Held idea:** produce alternate readings of the same corpus **as if** organized by a named style or figure—e.g. a **Foucauldian** pass foregrounding genealogy, institutions, and conditions of truth; room later for other figures or traditions.
+| Layer | File / code | Answers |
+|-------|-------------|--------|
+| **Persona** | `docs/agent_character_and_skills.md` | *How* the agent speaks: cadence, industrial tone, honesty rules, soundtrack vibe. |
+| **Lens** | This doc + `lenses.py` | *What kind of analysis* (terminological, epistemic, discourse, …). |
+| **Reader mask** | This doc (catalog) + future `reader_masks` in code | *Which heuristic questions* to foreground—e.g. Foucauldian vs Kantian *angles*, without claiming authority from the dead. |
 
-This must **not** be ventriloquism. Treat it as a **heuristic**: which questions get asked first, what counts as a salient tension. Frame outputs as **interpretive experiments** tied to citations, not as what the philosopher would have concluded off-page.
+**Rule of thumb:** keep **voice** in the persona file; keep **methodological presets and philosopher combinations** here so they stay versioned and reproducible.
 
-**Implementation sketch (later):** optional control **`reader_mask`** next to the analysis lens; the system prompt injects a short constraint card for that mask plus `agent_character_and_skills.md`. The offline lexical sketch can remain substrate until LLM-backed passes exist.
+---
 
-**Guardrails:** no implied endorsement by the historical figure; mark speculation; prefer **SOURCE UNCLEAR** over clever reconstruction.
+## Reader masks (“as if” a philosopher)
+
+**Intent:** alternate readings of the same corpus **as if** organized by a named style or figure—e.g. a **Foucauldian** pass foregrounding genealogy, institutions, and conditions of truth; slots for other figures or traditions.
+
+This must **not** be ventriloquism. Treat masks as **heuristics**: ordering of questions, salience of tensions. Frame outputs as **interpretive experiments** tied to citations, not as what the philosopher would have concluded off-page.
+
+### Mix and match
+
+You are not limited to one figure.
+
+1. **Sequential passes (recommended first):** same corpus → **Pass A** (mask 1) → **Pass B** (mask 2), clearly labeled sections. Preserves clarity; avoids mush.
+2. **Blended constraint card (advanced):** one pass with an explicit prompt that merges **short** bullet constraints from two or more named masks (e.g. Foucault + dialogics). Higher risk of vague synthesis—require section labels that state *which tension comes from which heuristic*.
+3. **Custom supplement (open field):** a future UI text area — *“Additional interpretive instructions”* — appends your free-text to the chosen preset(s). Use for one-off experiments; **named presets** stay in this doc or code so runs stay reproducible.
+
+**Implementation sketch (later):** optional **`reader_mask`** (single), **`reader_masks`** (ordered list), or **`reader_mask` + `reader_mask_notes` (open field)** alongside the analysis lens. System prompt = constraint card(s) + **`agent_character_and_skills.md`** (voice only). Offline lexical sketch stays substrate until LLM passes exist.
+
+**Guardrails:** no implied endorsement by historical figures; mark speculation; prefer **SOURCE UNCLEAR** over clever reconstruction.
 
 ---
 

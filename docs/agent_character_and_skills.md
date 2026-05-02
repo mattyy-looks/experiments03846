@@ -68,4 +68,14 @@ Paste a **paragraph you love** from something you’ve written or read — we ca
 
 ---
 
-*When this file is filled in, tell Cursor: “Use `docs/agent_character_and_skills.md` as the system persona for the report generator.”*
+## Interpretive machinery — keep it out of this file
+
+**This document is for *voice* and *boundaries*:** tone, soundtrack vibe, how blunt or careful the prose is, what the agent refuses to fake.
+
+**Philosophical reading strategies** — analysis lenses, **reader masks** (“as if” Foucault, Kant, etc.), mixing figures, and optional free-text add-ons — live in **`docs/analysis_lenses.md`**. That file is the map for *which questions* get asked of the corpus; it pairs with this one: **persona = how it speaks, lenses/masks = what it prioritizes** (once the LLM layer exists).
+
+Do not duplicate long mask definitions here; link to `analysis_lenses.md` and keep this file as the **character sheet**.
+
+---
+
+*When this file is filled in, tell Cursor: “Use `docs/agent_character_and_skills.md` as the system persona for the report generator.”* For interpretive passes, add: “Respect `docs/analysis_lenses.md` for lens and reader-mask behavior.”
