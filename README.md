@@ -1,71 +1,109 @@
 # PDF Research Agent
 
-Analyzes a folder of PDFs, surfaces themes, overlaps, synonyms, and tensions, then drafts a structured report. UI will come after the core pipeline works.
+**Offline research paper analysis.** Drop a folder of PDFs → get structural overlaps, term hooks, and optional AI-powered insights (runs locally on your machine).
 
-## Open this project in Cursor
+---
 
-1. **Menu:** **File → Open Folder…** (or **Ctrl+K Ctrl+O**).
-2. Choose: `C:\Users\user1\projects\pdf-research-agent`.
-3. Press **Open**.
+## ⚡ Quick Start (2 min)
 
-That folder becomes your **workspace root** — chat and terminals run from here.
-
-## Optional: pin this folder
-
-Use **File → Add Folder to Workspace…** only if you want multiple roots; for one app, a single open folder is enough.
-
-## Run the Streamlit app (Python 3.10+)
-
-Use **PowerShell** and `cd` to this project folder first, e.g. `C:\Users\user1\projects\pdf-research-agent`.
-
-**Recommended (no `Activate.ps1` — works when execution policy blocks scripts):** use the venv’s `python.exe` and run Streamlit as a **module** so the right environment is always used.
-
+### 1. Setup
 ```powershell
-# One-time: create venv and install deps
+# One time only
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
 
-# Every time: start the app
+### 2. Run
+```powershell
 .\.venv\Scripts\python.exe -m streamlit run app.py
 ```
 
-**The `-r` in `pip install -r requirements.txt` is required:** it tells pip to install *from a requirements file*.  
-If you run `pip install requirements.txt` (no `-r`), pip thinks you want a package literally named `requirements.txt` and will complain.
+Your browser opens to `http://localhost:8501`.
 
-**If `.\.venv\...` is “not found”:** you are not in the project directory, or the venv was never created — run the one-time block from the folder that contains `app.py`.
+### 3. Use it
+- **Paste a folder path** (or click Browse…)
+- **Pick an analysis lens** (Epistemic, Structural, etc.)
+- **Click RUN ANALYSIS**
+- See the overlap sketch + optional DeepSeek AI summary (if Ollama is running)
 
-**Optional — classic activate + `streamlit` on PATH:**
+---
 
-```powershell
-.\.venv\Scripts\Activate.ps1
-python -m streamlit run app.py
+## 📋 What You Get
+
+| Feature | Status |
+|---------|--------|
+| PDF text extraction | ✅ Working |
+| Cross-document term overlap | ✅ Working |
+| Epistemic register sketch | ✅ Working |
+| Local AI analysis (Ollama) | ✅ Working |
+| Custom persona/voice | 🔧 Fill in `docs/agent_character_and_skills.md` |
+
+---
+
+## 🤖 Local AI (Optional but Cool)
+
+If you have **Ollama** installed:
+1. Download & run [Ollama](https://ollama.ai)
+2. Pull the lightweight model: `ollama pull deepseek-r1:1.5b`
+3. Leave it running in your system tray
+4. The app will auto-detect it and offer AI analysis
+
+**No API keys. No data leaves your PC.** Everything runs offline.
+
+---
+
+## 🎭 Customize the Agent's Voice
+
+Edit **`docs/agent_character_and_skills.md`** to define:
+- Who the agent is (name, personality)
+- What they're allowed to do (skills, boundaries)
+- How they write (tone, style rules)
+
+Then the prompts will adapt to match.
+
+---
+
+## 📁 File Map
+
+```
+.
+├── app.py                              # Streamlit UI
+├── pdf_extract.py                      # PDF → text + overlap detection
+├── epistemic_hints.py                  # Epistemic lens logic
+├── lenses.py                           # Analysis frameworks
+├── folder_dialog.py                    # Native folder picker
+├── requirements.txt                    # Dependencies
+├── docs/
+│   ├── agent_character_and_skills.md   # YOUR AGENT'S VOICE (fill this in)
+│   ├── analysis_lenses.md              # What each lens does
+│   └── BUILD_DISCOURSE.md              # Dev notes + philosophy
 ```
 
-If activation fails with *running scripts is disabled*, either keep using `.\.venv\Scripts\python.exe -m ...` above, or (once) run:  
-`Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`
+---
 
-Your browser should open to a local URL (usually `http://localhost:8501`). Set the PDF folder by pasting its **absolute path** or click **Browse…** (opens the Windows folder picker when Streamlit runs on your PC). Then click **RUN ANALYSIS**.
+## 🔧 Troubleshooting
 
-- **Offline sketch:** the app extracts text and lists **cross-document term hooks** (words appearing in 2+ PDFs). This is not yet the full narrative report or synonym detection — that comes with an LLM pass.
-- **LLM (optional):** copy `.env.example` → `.env` and set `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`. See **`docs/LLM_SETUP.md`** (DeepSeek cloud + self-hosted). Use `llm_client.chat_completion(...)` from code.
+**"Module not found" errors?**
+- Make sure you're running from the project folder
+- Check `.venv` was created: `ls .\.venv\Scripts\python.exe`
 
-## What to do next (in order)
+**"Ollama not running"?**
+- Open Ollama from Start Menu / Applications
+- Refresh the Streamlit app
 
-1. Fill in **`docs/agent_character_and_skills.md`** — your agent’s voice and boundaries.
-2. Run **`.\.venv\Scripts\python.exe -m streamlit run app.py`** and test on a small PDF folder.
-3. Add **`.env`** + LLM-backed report section when ready.
+**Path picker doesn't work?**
+- Paste the path manually (it's fine, the picker is optional)
+- Windows Explorer → address bar → Ctrl+A → Ctrl+C → paste here
 
-## Files
+---
 
-| Path | Purpose |
-|------|--------|
-| `app.py` | Streamlit UI (big red buttons, folder path, report sketch) |
-| `pdf_extract.py` | PDF text extraction + offline overlap hints |
-| `llm_client.py` | OpenAI-compatible chat helper (`LLM_*` env vars) |
-| `folder_dialog.py` | Native folder picker (Tk) for local runs |
-| `epistemic_hints.py` | Offline epistemic register counts for the epistemic lens |
-| `lenses.py` | Named analysis lenses (labels + preamble for future LLM routing) |
-| `requirements.txt` | Python dependencies |
-| `docs/agent_character_and_skills.md` | Character, tone, and “skills” the agent should behave as if it has |
-| `docs/analysis_lenses.md` | Hermeneutic / terminological / epistemic / discourse lenses — intent & prompts map |
-| `docs/BUILD_DISCOURSE.md` | Session notes: local-first scope, philosophy, and how to pace feature work |
+## 🚀 Next Steps
+
+1. **Fill in** `docs/agent_character_and_skills.md` (defines your agent's personality)
+2. **Test it** on a small PDF folder
+3. **Tweak lenses** in `docs/analysis_lenses.md` if you want custom analysis angles
+4. **Share vibes** with me if something cool emerges 👀
+
+---
+
+**Made with curiosity + local-first vibes.** No cloud, no API calls (unless you want 'em). Just PDFs and offline smarts.
