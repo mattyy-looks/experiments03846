@@ -8,6 +8,12 @@ import streamlit as st
 
 from pdf_extract import extract_folder, overlap_sketch_markdown
 
+
+def parse_folder_input(raw: str) -> Path:
+    """Strip whitespace and Explorer-style quotes from pasted paths."""
+    s = raw.strip().strip('"').strip("'")
+    return Path(s).expanduser()
+
 # Big red primary actions — industrial vibe, high visibility.
 st.markdown(
     """
@@ -56,9 +62,20 @@ folder_input = st.text_input(
     "PDF folder path",
     value=st.session_state["folder_path"],
     placeholder=r"C:\Users\you\Documents\my-pdfs",
-    help="Absolute path to a folder that contains .pdf files.",
+    help="Paste a path to an existing folder on this PC. Quotes from File Explorer are OK.",
 )
 st.session_state["folder_path"] = folder_input.strip()
+
+with st.expander("Path not found? (Windows)"):
+    st.markdown(
+        """
+1. Open the folder in **File Explorer**.
+2. Click the **address bar** once (or press **Alt+D**), select all (**Ctrl+A**), copy (**Ctrl+C**).
+3. Paste here. If Windows wrapped the path in `"quotes"`, they are stripped automatically.
+
+**Checks:** the drive letter exists (e.g. `D:` USB plugged in), spelling matches, and the folder is on **this** machine (not only in cloud-only placeholders unless synced).
+        """
+    )
 
 col_a, col_b = st.columns(2)
 with col_a:
@@ -76,7 +93,8 @@ if run:
     if not path_str:
         st.error("Enter a folder path first.")
     else:
-        folder = Path(path_str)
+        folder = parse_folder_input(path_str)
+        resolved = folder.resolve()
         try:
             with st.spinner("Reading PDFs…"):
                 texts = extract_folder(folder)
@@ -85,6 +103,18 @@ if run:
             else:
                 st.session_state["last_texts"] = texts
                 st.session_state["last_markdown"] = overlap_sketch_markdown(texts)
+        except ValueError as e:
+            msg = str(e)
+            if "does not exist" in msg:
+                st.error(
+                    f"**Folder not found:** `{resolved}`\n\n"
+                    "Confirm the folder exists on **this PC**, the drive is connected, "
+                    "and there are no typos. Use the tips under **Path not found?** above."
+                )
+            elif "Not a folder" in msg:
+                st.error(f"**That path is not a folder:** `{resolved}`")
+            else:
+                st.error(msg)
         except Exception as e:  # noqa: BLE001
             st.exception(e)
 

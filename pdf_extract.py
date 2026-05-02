@@ -5,7 +5,6 @@ from __future__ import annotations
 import re
 from collections import defaultdict
 from pathlib import Path
-from typing import Iterable
 
 import fitz
 
@@ -35,9 +34,11 @@ def extract_pdf(path: Path) -> str:
 
 
 def extract_folder(folder: Path) -> dict[str, str]:
-    folder = folder.resolve()
+    folder = folder.expanduser().resolve()
+    if not folder.exists():
+        raise ValueError(f"Path does not exist: {folder}")
     if not folder.is_dir():
-        raise ValueError(f"Not a directory: {folder}")
+        raise ValueError(f"Not a folder (maybe a file?): {folder}")
 
     out: dict[str, str] = {}
     pdfs = sorted(folder.glob("*.pdf"))
