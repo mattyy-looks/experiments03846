@@ -62,4 +62,18 @@ The agent should **surface candidate readings and tensions**, attribute claims t
 - **Today:** the Streamlit control records **which lens you intend**; only `lexical_overlap` has a dedicated offline engine. Others prepend the same sketch plus an honest “not wired yet” note until each lens gets its retrieval + prompt stack.
 - **Next:** per-lens system prompts (pulling from `agent_character_and_skills.md`), optional separate chunking or citation anchoring, and exports per lens.
 
+---
+
+## Idea backlog: reader masks (“as if” a philosopher)
+
+**Held idea:** produce alternate readings of the same corpus **as if** organized by a named style or figure—e.g. a **Foucauldian** pass foregrounding genealogy, institutions, and conditions of truth; room later for other figures or traditions.
+
+This must **not** be ventriloquism. Treat it as a **heuristic**: which questions get asked first, what counts as a salient tension. Frame outputs as **interpretive experiments** tied to citations, not as what the philosopher would have concluded off-page.
+
+**Implementation sketch (later):** optional control **`reader_mask`** next to the analysis lens; the system prompt injects a short constraint card for that mask plus `agent_character_and_skills.md`. The offline lexical sketch can remain substrate until LLM-backed passes exist.
+
+**Guardrails:** no implied endorsement by the historical figure; mark speculation; prefer **SOURCE UNCLEAR** over clever reconstruction.
+
+---
+
 Append new rows here when you invent another reading strategy—then add a matching entry in `lenses.py`.
