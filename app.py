@@ -13,6 +13,18 @@ from pdf_extract import extract_folder, overlap_sketch_markdown
 
 from openai import OpenAI
 import os
+from pathlib import Path
+import streamlit as st
+from epistemic_hints import epistemic_sketch_markdown
+from folder_dialog import pick_folder_path
+from lenses import ANALYSIS_LENSES, LENS_ORDER, format_report_preamble
+from pdf_extract import extract_folder, overlap_sketch_markdown
+
+import ollama
+
+
+
+
 
 # Initialize DeepSeek client
 @st.cache_resource
@@ -66,6 +78,48 @@ Provide detailed analysis with specific references to the texts."""
         return response.choices[0].message.content
     except Exception as e:
         return f"❌ DeepSeek error: {str(e)}"
+
+def ollama_analyze(texts: dict[str, str], lens_id: str, query: str = "") -> str:
+    """Use local Ollama + DeepSeek for free, offline analysis."""
+    if not texts:
+        return "⚠️ No text to analyze."
+    
+    # Limit to save RAM and speed up
+    combined = "\n\n---\n\n".join([
+        f"📄 FILE: {name}\n\n{body[:2000]}"  # First 2000 chars per file
+        for name, body in list(texts.items())[:3]  # First 3 PDFs
+    ])
+    
+    lens_label = ANALYSIS_LENSES.get(lens_id, {}).get("label", lens_id)
+    
+    prompt = f"""You are a research analyst. Analyze these academic papers.
+
+🔍 Analysis lens: {lens_label}
+
+{f"❓ Question: {query}" if query else f"📋 Task: Provide a detailed analysis focusing on {lens_label}"}
+
+📑 Papers:
+{combined}
+
+🎯 Output requirements:
+- Be specific and cite evidence from the texts
+- Identify patterns, contradictions, or gaps
+- Use clear academic tone
+- Format with markdown (headings, bullet points)
+
+Analysis:"""
+
+    try:
+        response = ollama.chat(
+            model='deepseek-r1:7b',  # or 'deepseek-r1:1.5b' if 7b is too heavy
+            messages=[{'role': 'user', 'content': prompt}],
+            options={'temperature': 0.7, 'num_predict': 1500}  # limits response length
+        )
+        return response['message']['content']
+    except Exception as e:
+        return f"❌ Ollama error: {str(e)}\n\n💡 Make sure Ollama is running (check system tray)"
+        
+
 
 def build_report_markdown(lens_id: str, texts: dict[str, str]) -> str:
     parts: list[str] = [format_report_preamble(lens_id)]
@@ -132,6 +186,42 @@ with st.sidebar:
             st.text(persona_path.read_text(encoding="utf-8")[:1200] + "\n…")
     else:
         st.warning("Add `docs/agent_character_and_skills.md` for tone rules.")
+
+    with st.sidebar:
+    st.subheader("Persona")
+    persona_path = Path(__file__).resolve().parent / "docs" / "agent_character_and_skills.md"
+    if persona_path.is_file():
+        st.success(f"Using `{persona_path.name}` on disk.")
+        with st.expander("Preview first lines"):
+            st.text(persona_path.read_text(encoding="utf-8")[:1200] + "\n…")
+    else:
+        st.warning("Add `docs/agent_character_and_skills.md` for tone rules.")
+    
+    # ========== ADD THIS DEEPSEEK SECTION ==========
+    st.divider()
+    st.subheader("🤖 Local DeepSeek (Ollama)")
+    use_ollama = st.checkbox("Enable AI analysis", value=True, help="Runs locally on your PC - FREE and OFFLINE")
+    
+    if use_ollama:
+        # Check if Ollama is running
+        try:
+            ollama.list()
+            st.success("✅ Ollama connected - DeepSeek ready")
+            st.caption("Running completely offline on your machine")
+        except:
+            st.error("❌ Ollama not running")
+            st.info("Open Ollama from Start Menu first, then refresh")
+        
+        analysis_type = st.radio(
+            "Analysis depth",
+            ["Quick summary", "Detailed analysis", "Research gaps", "Custom question"],
+            help="More depth = slower but better insights"
+        )
+        
+        custom_query = ""
+        if analysis_type == "Custom question":
+            custom_query = st.text_area("What do you want to know about these PDFs?")
+    # ========== END DEEPSEEK SECTION ==========
     
     # ========== ADD THIS DEEPSEEK SECTION HERE ==========
     st.divider()  # adds a nice line separator
