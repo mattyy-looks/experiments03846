@@ -6,8 +6,17 @@ from pathlib import Path
 
 import streamlit as st
 
+from epistemic_hints import epistemic_sketch_markdown
 from lenses import ANALYSIS_LENSES, LENS_ORDER, format_report_preamble
 from pdf_extract import extract_folder, overlap_sketch_markdown
+
+
+def build_report_markdown(lens_id: str, texts: dict[str, str]) -> str:
+    parts: list[str] = [format_report_preamble(lens_id)]
+    if lens_id == "epistemic":
+        parts.append(epistemic_sketch_markdown(texts))
+    parts.append(overlap_sketch_markdown(texts))
+    return "\n\n".join(parts)
 
 
 def parse_folder_input(raw: str) -> Path:
@@ -45,7 +54,7 @@ st.set_page_config(
 st.title("PDF Research Agent")
 st.caption(
     "Folder of PDFs → choose an **analysis lens** → extract text → offline structural sketch. "
-    "Deeper hermeneutic / epistemic passes = next (LLM). See `docs/analysis_lenses.md`."
+    "Epistemic lens = offline register sketch + overlap; other lenses = overlap until wired. See `docs/analysis_lenses.md`."
 )
 
 with st.sidebar:
@@ -75,7 +84,7 @@ lens_id = st.selectbox(
     options=list(LENS_ORDER),
     format_func=lambda k: ANALYSIS_LENSES[k]["label"],
     index=0,
-    help="Interpretive stance for this run. Structural/lexical is live offline; others record intent + preamble until wired.",
+    help="Structural = overlap only. Epistemic = register heuristic + overlap. Others = overlap + planned preamble until wired.",
 )
 
 with st.expander("Path not found? (Windows)"):
@@ -116,8 +125,7 @@ if run:
             else:
                 st.session_state["last_texts"] = texts
                 st.session_state["last_lens"] = lens_id
-                body = overlap_sketch_markdown(texts)
-                st.session_state["last_markdown"] = format_report_preamble(lens_id) + body
+                st.session_state["last_markdown"] = build_report_markdown(lens_id, texts)
         except ValueError as e:
             msg = str(e)
             if "does not exist" in msg:

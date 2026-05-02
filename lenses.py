@@ -34,8 +34,8 @@ ANALYSIS_LENSES: dict[str, dict[str, str]] = {
     },
     "epistemic": {
         "label": "Epistemic — ways of knowing",
-        "short": "Surfaces what each text treats as evidence, authority, proof, and doubt — friction between epistemologies.",
-        "status": "planned",
+        "short": "Offline **vocabulary-register sketch** (evidence / logic / authority / hedging / axioms) plus structural overlap. LLM layer optional later.",
+        "status": "hybrid",
     },
     "hermeneutic": {
         "label": "Hermeneutic — horizons & sense-making",
@@ -63,7 +63,17 @@ def format_report_preamble(lens_id: str) -> str:
         meta["short"],
         "",
     ]
-    if meta["status"] != "live":
+    status = meta["status"]
+    if status == "hybrid":
+        lines.extend(
+            [
+                "*This lens runs an **offline epistemic vocabulary heuristic** (see first section below), "
+                "then the usual **structural overlap** substrate. A deeper interpretive synthesis still "
+                "needs an LLM when you wire `OPENAI_API_KEY` (future).*",
+                "",
+            ]
+        )
+    elif status != "live":
         lines.extend(
             [
                 "*Engine note: this lens is not yet wired to its own model pass or retrieval strategy — "

@@ -34,10 +34,11 @@ None of these replaces careful reading; they **compress attention** so you can c
 - **Guiding questions:** Do two texts use different words for the same construct? Does one term split into incompatible senses?
 - **Output shape:** candidate glossary, “same term / different definition” table, drift notes.
 
-### Epistemic — ways of knowing *(planned)*
+### Epistemic — ways of knowing *(hybrid: offline heuristic + planned LLM)*
 
 - **Guiding questions:** What modalities appear—empirical, testimonial, deductive, revelatory? Where do texts disagree about *what would count* as settling a dispute?
-- **Output shape:** per-document epistemic stance sketch; friction matrix between sources.
+- **Today (no API):** `epistemic_hints.py` scores coarse **vocabulary registers** (data/evidence language, inferential markers, authority/citation talk, hedging, definitional/axiomatic wording) per file, normalized per 10k words, plus “which file leads” each register when ≥2 PDFs parse cleanly.
+- **Output shape (later with LLM):** narrative per-document epistemic stance + friction matrix between sources—layered on top of the same extracted text.
 
 ### Hermeneutic — horizons & sense-making *(planned)*
 
@@ -59,7 +60,7 @@ The agent should **surface candidate readings and tensions**, attribute claims t
 
 ## Implementation notes
 
-- **Today:** the Streamlit control records **which lens you intend**; only `lexical_overlap` has a dedicated offline engine. Others prepend the same sketch plus an honest “not wired yet” note until each lens gets its retrieval + prompt stack.
+- **Today:** the Streamlit control records **which lens you intend**. **`lexical_overlap`** runs structural overlap only; **`epistemic`** adds the offline register heuristic in `epistemic_hints.py`, then the same overlap substrate. Other lenses prepend an honest “not wired yet” note until each gets its retrieval + prompt stack.
 - **Next:** per-lens system prompts (pulling from `agent_character_and_skills.md`), optional separate chunking or citation anchoring, and exports per lens.
 
 ---
