@@ -63,3 +63,4 @@ Your browser should open to a local URL (usually `http://localhost:8501`). Paste
 | `pdf_extract.py` | PDF text extraction + offline overlap hints |
 | `requirements.txt` | Python dependencies |
 | `docs/agent_character_and_skills.md` | Character, tone, and “skills” the agent should behave as if it has |
+| `docs/BUILD_DISCOURSE.md` | Session notes: local-first scope, philosophy, and how to pace feature work |
