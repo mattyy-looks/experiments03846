@@ -96,6 +96,11 @@ st.caption(
     "Optional: local AI analysis using Ollama (free, offline)."
 )
 
+# Initialize variables with defaults so they're always defined
+use_ollama = False
+analysis_type = "Quick summary"
+custom_query = ""
+
 # ------------------------------------------------------------
 # Sidebar (only once, properly indented)
 # ------------------------------------------------------------
@@ -260,4 +265,3 @@ if "last_markdown" in st.session_state:
             st.markdown(f"**{name}**")
             preview = body if len(body) <= 8000 else body[:8000] + "\n\n… _truncated for UI_ …"
             st.text_area(name, preview, height=220, label_visibility="collapsed")
-    
