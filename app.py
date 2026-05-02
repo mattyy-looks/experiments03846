@@ -197,13 +197,21 @@ with st.sidebar:
     else:
         st.warning("Add `docs/agent_character_and_skills.md` for tone rules.")
     
-    # ========== ADD THIS DEEPSEEK SECTION ==========
+ with st.sidebar:
+    st.subheader("Persona")
+    persona_path = Path(__file__).resolve().parent / "docs" / "agent_character_and_skills.md"
+    if persona_path.is_file():
+        st.success(f"Using `{persona_path.name}` on disk.")
+        with st.expander("Preview first lines"):
+            st.text(persona_path.read_text(encoding="utf-8")[:1200] + "\n…")
+    else:
+        st.warning("Add `docs/agent_character_and_skills.md` for tone rules.")
+    
     st.divider()
     st.subheader("🤖 Local DeepSeek (Ollama)")
     use_ollama = st.checkbox("Enable AI analysis", value=True, help="Runs locally on your PC - FREE and OFFLINE")
     
     if use_ollama:
-        # Check if Ollama is running
         try:
             ollama.list()
             st.success("✅ Ollama connected - DeepSeek ready")
@@ -221,7 +229,6 @@ with st.sidebar:
         custom_query = ""
         if analysis_type == "Custom question":
             custom_query = st.text_area("What do you want to know about these PDFs?")
-    # ========== END DEEPSEEK SECTION ==========
     
     # ========== ADD THIS DEEPSEEK SECTION HERE ==========
     st.divider()  # adds a nice line separator
