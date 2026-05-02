@@ -315,7 +315,109 @@ if clear:
     st.session_state.pop("last_texts", None)
     st.session_state.pop("last_lens", None)
     st.rerun()
+if run:
+    path_str = st.session_state["folder_path"]
+    if not path_str:
+        st.error("Enter a folder path first.")
+    else:
+        folder = parse_folder_input(path_str)
+        try:
+            with st.spinner("📄 Reading PDFs..."):
+                texts = extract_folder(folder)
+            if not texts:
+                st.warning("No `.pdf` files in that folder.")
+            else:
+                st.session_state["last_texts"] = texts
+                st.session_state["last_lens"] = lens_id
+                
+                # Generate base structural sketch (always runs)
+                base_report = build_report_markdown(lens_id, texts)
+                
+                # Add Ollama analysis if enabled
+                if use_ollama:
+                    with st.spinner("🧠 DeepSeek analyzing (this runs on your PC - may take 10-30 sec)..."):
+                        # Determine query based on analysis type
+                        if analysis_type == "Quick summary":
+                            query = "Provide a brief 2-3 paragraph summary synthesizing the key points"
+                        elif analysis_type == "Detailed analysis":
+                            query = "Provide a thorough analysis of arguments, evidence, and conclusions"
+                        elif analysis_type == "Research gaps":
+                            query = "Identify contradictions, unanswered questions, and future research directions"
+                        else:
+                            query = custom_query
+                        
+                        ai_analysis = ollama_analyze(texts, lens_id, query)
+                        
+                        # Combine both reports
+                        final_report = f"""{base_report}
 
+---
+if run:
+    path_str = st.session_state["folder_path"]
+    if not path_str:
+        st.error("Enter a folder path first.")
+    else:
+        folder = parse_folder_input(path_str)
+        try:
+            with st.spinner("📄 Reading PDFs..."):
+                texts = extract_folder(folder)
+            if not texts:
+                st.warning("No `.pdf` files in that folder.")
+            else:
+                st.session_state["last_texts"] = texts
+                st.session_state["last_lens"] = lens_id
+                
+                # Generate base structural sketch (always runs)
+                base_report = build_report_markdown(lens_id, texts)
+                
+                # Add Ollama analysis if enabled
+                if use_ollama:
+                    with st.spinner("🧠 DeepSeek analyzing (this runs on your PC - may take 10-30 sec)..."):
+                        # Determine query based on analysis type
+                        if analysis_type == "Quick summary":
+                            query = "Provide a brief 2-3 paragraph summary synthesizing the key points"
+                        elif analysis_type == "Detailed analysis":
+                            query = "Provide a thorough analysis of arguments, evidence, and conclusions"
+                        elif analysis_type == "Research gaps":
+                            query = "Identify contradictions, unanswered questions, and future research directions"
+                        else:
+                            query = custom_query
+                        
+                        ai_analysis = ollama_analyze(texts, lens_id, query)
+                        
+                        # Combine both reports
+                        final_report = f"""{base_report}
+
+---
+
+## 🧠 DeepSeek AI Analysis ({analysis_type})
+
+{ai_analysis}
+
+---
+*⚡ Analysis ran 100% locally on your machine using Ollama + DeepSeek. No data left your computer.*
+"""
+                        st.session_state["last_markdown"] = final_report
+                else:
+                    st.session_state["last_markdown"] = base_report
+                    
+        except Exception as e:
+            st.exception(e)
+
+
+## 🧠 DeepSeek AI Analysis ({analysis_type})
+
+{ai_analysis}
+
+---
+*⚡ Analysis ran 100% locally on your machine using Ollama + DeepSeek. No data left your computer.*
+"""
+                        st.session_state["last_markdown"] = final_report
+                else:
+                    st.session_state["last_markdown"] = base_report
+                    
+        except Exception as e:
+            st.exception(e)
 if run:
     path_str = st.session_state["folder_path"]
     if not path_str:
