@@ -16,14 +16,33 @@ Use **File → Add Folder to Workspace…** only if you want multiple roots; for
 
 ## Run the Streamlit app (Python 3.10+)
 
-From this folder in PowerShell:
+Use **PowerShell** and `cd` to this project folder first, e.g. `C:\Users\user1\projects\pdf-research-agent`.
+
+**Recommended (no `Activate.ps1` — works when execution policy blocks scripts):** use the venv’s `python.exe` and run Streamlit as a **module** so the right environment is always used.
 
 ```powershell
+# One-time: create venv and install deps
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-streamlit run app.py
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+
+# Every time: start the app
+.\.venv\Scripts\python.exe -m streamlit run app.py
 ```
+
+**The `-r` in `pip install -r requirements.txt` is required:** it tells pip to install *from a requirements file*.  
+If you run `pip install requirements.txt` (no `-r`), pip thinks you want a package literally named `requirements.txt` and will complain.
+
+**If `.\.venv\...` is “not found”:** you are not in the project directory, or the venv was never created — run the one-time block from the folder that contains `app.py`.
+
+**Optional — classic activate + `streamlit` on PATH:**
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+python -m streamlit run app.py
+```
+
+If activation fails with *running scripts is disabled*, either keep using `.\.venv\Scripts\python.exe -m ...` above, or (once) run:  
+`Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`
 
 Your browser should open to a local URL (usually `http://localhost:8501`). Paste the **absolute path** to a folder that contains `.pdf` files, then click **RUN ANALYSIS**.
 
@@ -33,7 +52,7 @@ Your browser should open to a local URL (usually `http://localhost:8501`). Paste
 ## What to do next (in order)
 
 1. Fill in **`docs/agent_character_and_skills.md`** — your agent’s voice and boundaries.
-2. Run **`streamlit run app.py`** and test on a small PDF folder.
+2. Run **`.\.venv\Scripts\python.exe -m streamlit run app.py`** and test on a small PDF folder.
 3. Add **`.env`** + LLM-backed report section when ready.
 
 ## Files
