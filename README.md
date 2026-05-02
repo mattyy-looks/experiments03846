@@ -44,7 +44,7 @@ python -m streamlit run app.py
 If activation fails with *running scripts is disabled*, either keep using `.\.venv\Scripts\python.exe -m ...` above, or (once) run:  
 `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`
 
-Your browser should open to a local URL (usually `http://localhost:8501`). Paste the **absolute path** to a folder that contains `.pdf` files, then click **RUN ANALYSIS**.
+Your browser should open to a local URL (usually `http://localhost:8501`). Set the PDF folder by pasting its **absolute path** or click **Browse…** (opens the Windows folder picker when Streamlit runs on your PC). Then click **RUN ANALYSIS**.
 
 - **Offline sketch:** the app extracts text and lists **cross-document term hooks** (words appearing in 2+ PDFs). This is not yet the full narrative report or synonym detection — that comes with an LLM pass.
 - **Secrets:** when we add API keys, use a `.env` file (already gitignored). See `.env.example` when it exists.
@@ -61,6 +61,7 @@ Your browser should open to a local URL (usually `http://localhost:8501`). Paste
 |------|--------|
 | `app.py` | Streamlit UI (big red buttons, folder path, report sketch) |
 | `pdf_extract.py` | PDF text extraction + offline overlap hints |
+| `folder_dialog.py` | Native folder picker (Tk) for local runs |
 | `epistemic_hints.py` | Offline epistemic register counts for the epistemic lens |
 | `lenses.py` | Named analysis lenses (labels + preamble for future LLM routing) |
 | `requirements.txt` | Python dependencies |

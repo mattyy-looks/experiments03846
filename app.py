@@ -7,6 +7,7 @@ from pathlib import Path
 import streamlit as st
 
 from epistemic_hints import epistemic_sketch_markdown
+from folder_dialog import pick_folder_path
 from lenses import ANALYSIS_LENSES, LENS_ORDER, format_report_preamble
 from pdf_extract import extract_folder, overlap_sketch_markdown
 
@@ -71,13 +72,30 @@ default_folder = ""
 if "folder_path" not in st.session_state:
     st.session_state["folder_path"] = default_folder
 
-folder_input = st.text_input(
-    "PDF folder path",
-    value=st.session_state["folder_path"],
-    placeholder=r"C:\Users\you\Documents\my-pdfs",
-    help="Paste a path to an existing folder on this PC. Quotes from File Explorer are OK.",
-)
-st.session_state["folder_path"] = folder_input.strip()
+path_col, browse_col = st.columns([1, 0.22])
+with path_col:
+    folder_input = st.text_input(
+        "PDF folder path",
+        value=st.session_state["folder_path"],
+        placeholder=r"C:\Users\you\Documents\my-pdfs",
+        help="Paste a path, or click Browse to choose a folder on this PC. Quotes from Explorer are OK.",
+    )
+    st.session_state["folder_path"] = folder_input.strip()
+with browse_col:
+    st.markdown(
+        "<div style='padding-top: 1.65rem;'></div>",
+        unsafe_allow_html=True,
+    )
+    if st.button(
+        "Browse…",
+        key="browse_pdf_folder",
+        use_container_width=True,
+        help="Opens your system folder picker (only when the app runs on this computer).",
+    ):
+        chosen = pick_folder_path()
+        if chosen:
+            st.session_state["folder_path"] = chosen
+            st.rerun()
 
 lens_id = st.selectbox(
     "Analysis lens",
@@ -90,11 +108,17 @@ lens_id = st.selectbox(
 with st.expander("Path not found? (Windows)"):
     st.markdown(
         """
+Try **Browse…** next to the path field first—it fills in the exact folder path.
+
+Manual copy:
+
 1. Open the folder in **File Explorer**.
 2. Click the **address bar** once (or press **Alt+D**), select all (**Ctrl+A**), copy (**Ctrl+C**).
 3. Paste here. If Windows wrapped the path in `"quotes"`, they are stripped automatically.
 
 **Checks:** the drive letter exists (e.g. `D:` USB plugged in), spelling matches, and the folder is on **this** machine (not only in cloud-only placeholders unless synced).
+
+**Remote deploy:** Browse uses your PC only when Streamlit runs locally; on a headless server there is no mouse picker—paste paths instead.
         """
     )
 
