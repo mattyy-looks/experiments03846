@@ -123,6 +123,43 @@ with st.sidebar:
     else:
         st.warning("Add `docs/agent_character_and_skills.md` for tone rules.")
 
+with st.sidebar:
+    st.subheader("Persona")
+    persona_path = Path(__file__).resolve().parent / "docs" / "agent_character_and_skills.md"
+    if persona_path.is_file():
+        st.success(f"Using `{persona_path.name}` on disk.")
+        with st.expander("Preview first lines"):
+            st.text(persona_path.read_text(encoding="utf-8")[:1200] + "\n…")
+    else:
+        st.warning("Add `docs/agent_character_and_skills.md` for tone rules.")
+    
+    # ========== ADD THIS DEEPSEEK SECTION HERE ==========
+    st.divider()  # adds a nice line separator
+    st.subheader("🤖 DeepSeek AI Analysis")
+    use_deepseek = st.checkbox("Enable DeepSeek analysis (requires API key)")
+    
+    if use_deepseek and not deepseek_client:
+        st.error("⚠️ Set DEEPSEEK_API_KEY in environment variables")
+        st.code("""# Windows PowerShell:
+$env:DEEPSEEK_API_KEY="your-key-here"
+
+# Mac/Linux:
+export DEEPSEEK_API_KEY="your-key-here"
+
+# Or create .env file and use python-dotenv
+""")
+    
+    if use_deepseek and deepseek_client:
+        analysis_type = st.radio(
+            "Analysis type",
+            ["Summary & synthesis", "Key claims & evidence", "Research gaps", "Custom query"]
+        )
+        custom_query = ""
+        if analysis_type == "Custom query":
+            custom_query = st.text_area("Your question about these PDFs:")
+    # ========== END OF DEEPSEEK SECTION ==========
+
+
 default_folder = ""
 if "folder_path" not in st.session_state:
     st.session_state["folder_path"] = default_folder
