@@ -47,7 +47,7 @@ If activation fails with *running scripts is disabled*, either keep using `.\.ve
 Your browser should open to a local URL (usually `http://localhost:8501`). Set the PDF folder by pasting its **absolute path** or click **Browse…** (opens the Windows folder picker when Streamlit runs on your PC). Then click **RUN ANALYSIS**.
 
 - **Offline sketch:** the app extracts text and lists **cross-document term hooks** (words appearing in 2+ PDFs). This is not yet the full narrative report or synonym detection — that comes with an LLM pass.
-- **Secrets:** when we add API keys, use a `.env` file (already gitignored). See `.env.example` when it exists.
+- **LLM (optional):** copy `.env.example` → `.env` and set `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`. See **`docs/LLM_SETUP.md`** (DeepSeek cloud + self-hosted). Use `llm_client.chat_completion(...)` from code.
 
 ## What to do next (in order)
 
@@ -61,6 +61,7 @@ Your browser should open to a local URL (usually `http://localhost:8501`). Set t
 |------|--------|
 | `app.py` | Streamlit UI (big red buttons, folder path, report sketch) |
 | `pdf_extract.py` | PDF text extraction + offline overlap hints |
+| `llm_client.py` | OpenAI-compatible chat helper (`LLM_*` env vars) |
 | `folder_dialog.py` | Native folder picker (Tk) for local runs |
 | `epistemic_hints.py` | Offline epistemic register counts for the epistemic lens |
 | `lenses.py` | Named analysis lenses (labels + preamble for future LLM routing) |
