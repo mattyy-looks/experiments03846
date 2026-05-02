@@ -11,6 +11,23 @@ from folder_dialog import pick_folder_path
 from lenses import ANALYSIS_LENSES, LENS_ORDER, format_report_preamble
 from pdf_extract import extract_folder, overlap_sketch_markdown
 
+from openai import OpenAI
+import os
+
+# Initialize DeepSeek client
+@st.cache_resource
+def get_deepseek_client():
+    api_key = os.environ.get("DEEPSEEK_API_KEY")
+    if not api_key:
+        st.warning("⚠️ No DEEPSEEK_API_KEY found in environment variables. DeepSeek features disabled.")
+        return None
+    return OpenAI(
+        api_key=api_key,
+        base_url="https://api.deepseek.com"
+    )
+
+deepseek_client = get_deepseek_client()
+
 
 def build_report_markdown(lens_id: str, texts: dict[str, str]) -> str:
     parts: list[str] = [format_report_preamble(lens_id)]
