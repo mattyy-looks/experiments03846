@@ -187,7 +187,7 @@ with st.sidebar:
     else:
         st.warning("Add `docs/agent_character_and_skills.md` for tone rules.")
 
-    with st.sidebar:
+        with st.sidebar:
     st.subheader("Persona")
     persona_path = Path(__file__).resolve().parent / "docs" / "agent_character_and_skills.md"
     if persona_path.is_file():
