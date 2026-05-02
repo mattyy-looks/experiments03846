@@ -395,7 +395,7 @@ if run:
 {ai_analysis}
 
 ---
-*⚡ Analysis ran 100% locally on your machine using Ollama + DeepSeek. No data left your computer.*
+Analysis ran 100% locally on your machine using Ollama + DeepSeek. No data left your computer.*
 """
                         st.session_state["last_markdown"] = final_report
                 else:
